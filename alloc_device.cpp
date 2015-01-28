@@ -107,6 +107,8 @@ static int gralloc_alloc_buffer(alloc_device_t *dev, size_t size, int usage, buf
 		int ret;
 		unsigned int ion_flags = 0;
 
+		if( (usage & GRALLOC_USAGE_SW_READ_MASK) == GRALLOC_USAGE_SW_READ_OFTEN )
+			ion_flags = ION_FLAG_CACHED | ION_FLAG_CACHED_NEEDS_SYNC;
 		ret = ion_alloc(m->ion_client, size, 0, ION_HEAP_SYSTEM_MASK, ion_flags, &ion_hnd);
 
 		if (ret != 0)

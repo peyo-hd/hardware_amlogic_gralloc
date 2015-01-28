@@ -269,6 +269,22 @@ static int gralloc_lock(gralloc_module_t const* /*module*/, buffer_handle_t hand
 	if (hnd->flags & private_handle_t::PRIV_FLAGS_USES_UMP || hnd->flags & private_handle_t::PRIV_FLAGS_USES_ION)
 	{
 		hnd->writeOwner = usage & GRALLOC_USAGE_SW_WRITE_MASK;
+#if GRALLOC_ARM_DMA_BUF_MODULE
+		if (usage & (GRALLOC_USAGE_SW_READ_MASK | GRALLOC_USAGE_SW_WRITE_MASK))
+		{
+			hw_module_t * pmodule = NULL;
+			private_module_t *m=NULL;
+			if (hw_get_module(GRALLOC_HARDWARE_MODULE_ID, (const hw_module_t **)&pmodule) == 0)
+			{
+				m = reinterpret_cast<private_module_t *>(pmodule);
+				ion_sync_fd(m->ion_client, hnd->share_fd);
+			}
+			else
+			{
+				AERR("Couldnot get gralloc module for handle 0x%x\n", (unsigned int)handle);
+			}
+		}
+#endif
 	}
 
 	if (usage & (GRALLOC_USAGE_SW_READ_MASK | GRALLOC_USAGE_SW_WRITE_MASK))
