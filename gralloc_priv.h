@@ -61,6 +61,7 @@ struct fb_dmabuf_export
 	__u32 flags;
 };
 /*#define FBIOGET_DMABUF    _IOR('F', 0x21, struct fb_dmabuf_export)*/
+typedef int ion_user_handle_t;
 #endif /* GRALLOC_ARM_DMA_BUF_MODULE */
 
 
@@ -76,14 +77,6 @@ struct fb_dmabuf_export
 #include <ump/ump.h>
 #endif
 
-typedef enum
-{
-	MALI_YUV_NO_INFO,
-	MALI_YUV_BT601_NARROW,
-	MALI_YUV_BT601_WIDE,
-	MALI_YUV_BT709_NARROW,
-	MALI_YUV_BT709_WIDE,
-} mali_gralloc_yuv_info;
 
 struct private_handle_t;
 
@@ -129,6 +122,8 @@ struct private_handle_t
 		PRIV_FLAGS_FRAMEBUFFER = 0x00000001,
 		PRIV_FLAGS_USES_UMP    = 0x00000002,
 		PRIV_FLAGS_USES_ION    = 0x00000004,
+		PRIV_FLAGS_VIDEO_OVERLAY = 0x00000010,
+		PRIV_FLAGS_VIDEO_OMX     = 0x00000020,
 	};
 
 	enum
@@ -147,16 +142,11 @@ struct private_handle_t
 	int     flags;
 	int     usage;
 	int     size;
-	int     width;
-	int     height;
-	int     format;
-	int     stride;
 	int     base;
 	int     lockState;
 	int     writeOwner;
 	int     pid;
 
-	mali_gralloc_yuv_info yuv_info;
 
 	// Following members are for UMP memory only
 #if GRALLOC_ARM_UMP_MODULE
@@ -172,7 +162,7 @@ struct private_handle_t
 	int     offset;
 
 #if GRALLOC_ARM_DMA_BUF_MODULE
-	struct ion_handle *ion_hnd;
+	ion_user_handle_t ion_hnd;
 #define GRALLOC_ARM_DMA_BUF_NUM_INTS 2
 #else
 #define GRALLOC_ARM_DMA_BUF_NUM_INTS 0
@@ -191,9 +181,10 @@ struct private_handle_t
 	 * variables are used to track the number of integers that are conditionally
 	 * included.
 	 */
-	static const int sNumInts = 15 + GRALLOC_ARM_UMP_NUM_INTS + GRALLOC_ARM_DMA_BUF_NUM_INTS;
+	static const int sNumInts = 10 + GRALLOC_ARM_UMP_NUM_INTS + GRALLOC_ARM_DMA_BUF_NUM_INTS;
 	static const int sNumFds = GRALLOC_ARM_NUM_FDS;
 	static const int sMagic = 0x3141592;
+	int format;
 
 #if GRALLOC_ARM_UMP_MODULE
 	private_handle_t(int flags, int usage, int size, int base, int lock_state, ump_secure_id secure_id, ump_handle handle):
@@ -204,15 +195,10 @@ struct private_handle_t
 		flags(flags),
 		usage(usage),
 		size(size),
-		width(0),
-		height(0),
-		format(0),
-		stride(0),
 		base(base),
 		lockState(lock_state),
 		writeOwner(0),
 		pid(getpid()),
-		yuv_info(MALI_YUV_NO_INFO),
 		ump_id((int)secure_id),
 		ump_mem_handle((int)handle),
 		fd(0),
@@ -236,22 +222,17 @@ struct private_handle_t
 		flags(flags),
 		usage(usage),
 		size(size),
-		width(0),
-		height(0),
-		format(0),
-		stride(0),
 		base(base),
 		lockState(lock_state),
 		writeOwner(0),
 		pid(getpid()),
-		yuv_info(MALI_YUV_NO_INFO),
 #if GRALLOC_ARM_UMP_MODULE
 		ump_id((int)UMP_INVALID_SECURE_ID),
 		ump_mem_handle((int)UMP_INVALID_MEMORY_HANDLE),
 #endif
 		fd(0),
 		offset(0),
-		ion_hnd(NULL)
+		ion_hnd(0)
 
 	{
 		version = sizeof(native_handle);
@@ -269,15 +250,10 @@ struct private_handle_t
 		flags(flags),
 		usage(usage),
 		size(size),
-		width(0),
-		height(0),
-		format(0),
-		stride(0),
 		base(base),
 		lockState(lock_state),
 		writeOwner(0),
 		pid(getpid()),
-		yuv_info(MALI_YUV_NO_INFO),
 #if GRALLOC_ARM_UMP_MODULE
 		ump_id((int)UMP_INVALID_SECURE_ID),
 		ump_mem_handle((int)UMP_INVALID_MEMORY_HANDLE),
@@ -286,7 +262,7 @@ struct private_handle_t
 		offset(fb_offset)
 #if GRALLOC_ARM_DMA_BUF_MODULE
 		,
-		ion_hnd(NULL)
+		ion_hnd(0)
 #endif
 
 	{

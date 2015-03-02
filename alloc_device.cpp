@@ -101,12 +101,13 @@ static int gralloc_alloc_buffer(alloc_device_t *dev, size_t size, int usage, buf
 #if GRALLOC_ARM_DMA_BUF_MODULE
 	{
 		private_module_t *m = reinterpret_cast<private_module_t *>(dev->common.module);
-		struct ion_handle *ion_hnd;
+		ion_user_handle_t ion_hnd;
 		unsigned char *cpu_ptr;
 		int shared_fd;
 		int ret;
+		unsigned int ion_flags = 0;
 
-		ret = ion_alloc(m->ion_client, size, 0, ION_HEAP_SYSTEM_MASK, 0, &ion_hnd);
+		ret = ion_alloc(m->ion_client, size, 0, ION_HEAP_SYSTEM_MASK, ion_flags, &ion_hnd);
 
 		if (ret != 0)
 		{
@@ -393,10 +394,6 @@ static int alloc_device_alloc(alloc_device_t *dev, int w, int h, int format, int
 				break;
 
 			case HAL_PIXEL_FORMAT_RGB_565:
-#if PLATFORM_SDK_VERSION < 19
-			case HAL_PIXEL_FORMAT_RGBA_5551:
-			case HAL_PIXEL_FORMAT_RGBA_4444:
-#endif
 				bpp = 2;
 				break;
 
@@ -422,50 +419,14 @@ static int alloc_device_alloc(alloc_device_t *dev, int w, int h, int format, int
 
 	{
 		err = gralloc_alloc_buffer(dev, size, usage, pHandle);
-	}
 
-	if (err < 0)
-	{
+		if (err < 0)
+		{
 		return err;
-	}
-
-	/* match the framebuffer format */
-	if (usage & GRALLOC_USAGE_HW_FB)
-	{
-#ifdef GRALLOC_16_BITS
-		format = HAL_PIXEL_FORMAT_RGB_565;
-#else
-		format = HAL_PIXEL_FORMAT_BGRA_8888;
-#endif
-	}
-
-	private_handle_t *hnd = (private_handle_t *)*pHandle;
-	int               private_usage = usage & (GRALLOC_USAGE_PRIVATE_0 |
-	                                  GRALLOC_USAGE_PRIVATE_1);
-
-	switch (private_usage)
-	{
-		case 0:
-			hnd->yuv_info = MALI_YUV_BT601_NARROW;
-			break;
-
-		case GRALLOC_USAGE_PRIVATE_1:
-			hnd->yuv_info = MALI_YUV_BT601_WIDE;
-			break;
-
-		case GRALLOC_USAGE_PRIVATE_0:
-			hnd->yuv_info = MALI_YUV_BT709_NARROW;
-			break;
-
-		case (GRALLOC_USAGE_PRIVATE_0 | GRALLOC_USAGE_PRIVATE_1):
-			hnd->yuv_info = MALI_YUV_BT709_WIDE;
-			break;
-	}
-
-	hnd->width = w;
-	hnd->height = h;
-	hnd->format = format;
-	hnd->stride = stride;
+		}
+		private_handle_t* hnd = (private_handle_t*)(*pHandle);
+		hnd->format = format;
+    }
 
 	*pStride = stride;
 	return 0;
@@ -531,7 +492,7 @@ static int alloc_device_free(alloc_device_t *dev, buffer_handle_t handle)
 
 		if (0 != ion_free(m->ion_client, hnd->ion_hnd))
 		{
-			AERR("Failed to ion_free( ion_client: %d ion_hnd: %p )", m->ion_client, hnd->ion_hnd);
+			AERR("Failed to ion_free( ion_client: %d ion_hnd: %x )", m->ion_client, (unsigned int)hnd->ion_hnd);
 		}
 
 		memset((void *)hnd, 0, sizeof(*hnd));
@@ -571,7 +532,7 @@ static int alloc_device_close(struct hw_device_t *device)
 	return 0;
 }
 
-int alloc_device_open(hw_module_t const *module, const char *name, hw_device_t **device)
+int alloc_device_open(hw_module_t const *module, const char */*name*/, hw_device_t **device)
 {
 	alloc_device_t *dev;
 

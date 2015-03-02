@@ -57,7 +57,7 @@ static int gralloc_device_open(const hw_module_t *module, const char *name, hw_d
 	return status;
 }
 
-static int gralloc_register_buffer(gralloc_module_t const *module, buffer_handle_t handle)
+static int gralloc_register_buffer(gralloc_module_t const* /*module*/, buffer_handle_t handle)
 {
 	if (private_handle_t::validate(handle) < 0)
 	{
@@ -191,7 +191,7 @@ cleanup:
 	return retval;
 }
 
-static int gralloc_unregister_buffer(gralloc_module_t const *module, buffer_handle_t handle)
+static int gralloc_unregister_buffer(gralloc_module_t const* /*module*/, buffer_handle_t handle)
 {
 	if (private_handle_t::validate(handle) < 0)
 	{
@@ -256,7 +256,7 @@ static int gralloc_unregister_buffer(gralloc_module_t const *module, buffer_hand
 	return 0;
 }
 
-static int gralloc_lock(gralloc_module_t const *module, buffer_handle_t handle, int usage, int l, int t, int w, int h, void **vaddr)
+static int gralloc_lock(gralloc_module_t const* /*module*/, buffer_handle_t handle, int usage, int /*l*/, int /*t*/, int /*w*/, int /*h*/, void** vaddr)
 {
 	if (private_handle_t::validate(handle) < 0)
 	{
@@ -279,7 +279,7 @@ static int gralloc_lock(gralloc_module_t const *module, buffer_handle_t handle, 
 	return 0;
 }
 
-static int gralloc_unlock(gralloc_module_t const *module, buffer_handle_t handle)
+static int gralloc_unlock(gralloc_module_t const* /*module*/, buffer_handle_t handle)
 {
 	if (private_handle_t::validate(handle) < 0)
 	{

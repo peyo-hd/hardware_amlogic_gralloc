@@ -426,7 +426,7 @@ static int fb_close(struct hw_device_t *device)
 	return 0;
 }
 
-int compositionComplete(struct framebuffer_device_t *dev)
+int compositionComplete(struct framebuffer_device_t* /*dev*/)
 {
 	/* By doing a finish here we force the GL driver to start rendering
 	   all the drawcalls up to this point, and to wait for the rendering to be complete.*/
@@ -445,7 +445,7 @@ int compositionComplete(struct framebuffer_device_t *dev)
 	return 0;
 }
 
-int framebuffer_device_open(hw_module_t const *module, const char *name, hw_device_t **device)
+int framebuffer_device_open(hw_module_t const* module, const char* /*name*/, hw_device_t** device)
 {
 	int status = -EINVAL;
 
