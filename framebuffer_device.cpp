@@ -101,7 +101,7 @@ static int fb_post(struct framebuffer_device_t *dev, buffer_handle_t buffer)
 			return 0;
 		}
 
-		if (swapInterval == 1)
+		if (swapInterval == 1 && !(hnd->usage & GRALLOC_USAGE_HW_COMPOSER))
 		{
 			// enable VSYNC
 			interrupt = 1;
@@ -249,17 +249,17 @@ int init_frame_buffer_locked(struct private_module_t *module)
 	info.transp.length  = 0;
 #else
 	/*
-	 * Explicitly request 8/8/8
+	 * Explicitly request 8/8/8/8
 	 */
 	info.bits_per_pixel = 32;
-	info.red.offset     = 16;
+	info.red.offset     = 0;
 	info.red.length     = 8;
 	info.green.offset   = 8;
 	info.green.length   = 8;
-	info.blue.offset    = 0;
+	info.blue.offset    = 16;
 	info.blue.length    = 8;
-	info.transp.offset  = 0;
-	info.transp.length  = 0;
+	info.transp.offset  = 24;
+	info.transp.length  = 8;
 #endif
 
 	/*
@@ -488,7 +488,7 @@ int framebuffer_device_open(hw_module_t const* module, const char* /*name*/, hw_
 #ifdef GRALLOC_16_BITS
 	const_cast<int &>(dev->format) = HAL_PIXEL_FORMAT_RGB_565;
 #else
-	const_cast<int &>(dev->format) = HAL_PIXEL_FORMAT_BGRA_8888;
+	const_cast<int &>(dev->format) = HAL_PIXEL_FORMAT_RGBX_8888;
 #endif
 	const_cast<float &>(dev->xdpi) = m->xdpi;
 	const_cast<float &>(dev->ydpi) = m->ydpi;
