@@ -111,7 +111,7 @@ static int gralloc_register_buffer(gralloc_module_t const *module, buffer_handle
 			{
 				hnd->writeOwner = 0;
 				hnd->lockState &= ~(private_handle_t::LOCK_STATE_UNREGISTERED);
-				
+
 				pthread_mutex_unlock(&s_map_lock);
 				return 0;
 			}
@@ -179,7 +179,7 @@ static int gralloc_register_buffer(gralloc_module_t const *module, buffer_handle
 
 		hnd->base = mappedAddress + hnd->offset;
 		hnd->lockState &= ~(private_handle_t::LOCK_STATE_UNREGISTERED);
-		
+
 		pthread_mutex_unlock(&s_map_lock);
 		return 0;
 #endif
@@ -276,8 +276,8 @@ static int gralloc_unregister_buffer(gralloc_module_t const *module, buffer_hand
 
 static int gralloc_lock(gralloc_module_t const *module, buffer_handle_t handle, int usage, int l, int t, int w, int h, void **vaddr)
 {
-	
-	
+
+
 	if (private_handle_t::validate(handle) < 0)
 	{
 		AERR("Locking invalid buffer 0x%p, returning error", handle);
@@ -287,7 +287,7 @@ static int gralloc_lock(gralloc_module_t const *module, buffer_handle_t handle, 
 	private_handle_t *hnd = (private_handle_t *)handle;
 
 	pthread_mutex_lock(&s_map_lock);
-	
+
 	if (hnd->lockState & private_handle_t::LOCK_STATE_UNREGISTERED)
 	{
 		AERR("Locking on an unregistered buffer 0x%p, returning error", hnd);
