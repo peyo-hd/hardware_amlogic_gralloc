@@ -19,6 +19,7 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include <sys/ioctl.h>
 #include <linux/fb.h>
 
@@ -214,7 +215,7 @@ int framebuffer_device_open(hw_module_t const *module, const char *name, hw_devi
 #endif
 
     /*Init the framebuffer data*/
-    framebuffer_t *fb = new framebuffer_t();
+    framebuffer_t *fb = (framebuffer_t *) malloc(sizeof(*fb));
 	memset(fb, 0, sizeof(*fb));
 
     framebuffer_device_t *dev = &(fb->base);
@@ -230,7 +231,7 @@ int framebuffer_device_open(hw_module_t const *module, const char *name, hw_devi
 	#if 0
 		gralloc_close(gralloc_device);
     #endif
-        delete fb;
+	free(fb);
 		return status;
 	}
 

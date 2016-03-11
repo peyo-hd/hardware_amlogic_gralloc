@@ -123,6 +123,7 @@ struct private_module_t
 /*
 ATTENTATION: don't add member in this struct, it is used by other modules.
 */
+#define    HWC_HINT_OSD_VIDEO_OMX  0x00000004
 #ifdef __cplusplus
 struct private_handle_t : public native_handle
 {
